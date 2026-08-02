@@ -1,0 +1,198 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Remote Process Manager (Windows NT-Style)" 
+        Height="700" Width="1020" 
+        WindowStartupLocation="CenterScreen"
+        Background="#F8FAFC" 
+        FontFamily="Segoe UI" 
+        FontSize="12">
+    
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top" Background="#E2E8F0" Padding="4">
+            <MenuItem Header="_File">
+                <MenuItem x:Name="MenuRefresh" Header="_Refresh" InputGestureText="F5"/>
+                <MenuItem x:Name="MenuExport" Header="_Export to CSV..."/>
+                <Separator/>
+                <MenuItem x:Name="MenuExit" Header="E_xit"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem x:Name="MenuViewFlat" Header="_Flat List" IsCheckable="True" IsChecked="True"/>
+                <MenuItem x:Name="MenuViewTree" Header="_Tree View" IsCheckable="True"/>
+                <Separator/>
+                <MenuItem x:Name="MenuViewLog" Header="_Activity Log Pane" IsCheckable="True" IsChecked="False"/>
+                <Separator/>
+                <MenuItem Header="_Refresh Rate">
+                    <MenuItem x:Name="MenuRatePaused" Header="Paused" IsCheckable="True"/>
+                    <MenuItem x:Name="MenuRate500ms" Header="500 ms" IsCheckable="True"/>
+                    <MenuItem x:Name="MenuRate1s" Header="1 second" IsCheckable="True"/>
+                    <MenuItem x:Name="MenuRate2s" Header="2 seconds" IsCheckable="True" IsChecked="True"/>
+                    <MenuItem x:Name="MenuRate5s" Header="5 seconds" IsCheckable="True"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Process">
+                <MenuItem x:Name="MenuEndProcess" Header="_End Process" InputGestureText="Del"/>
+                <MenuItem x:Name="MenuEndProcessTree" Header="End Process _Tree"/>
+                <Separator/>
+                <MenuItem x:Name="MenuProperties" Header="P_roperties" InputGestureText="Enter"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Performance Summary Bar -->
+        <Border x:Name="SummaryBar" DockPanel.Dock="Top" Background="#0F172A" Padding="12,6">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="CPU Usage: " Foreground="#94A3B8" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtCpuSummary" Text="{Binding CpuSummaryFormatted}" Foreground="#38BDF8" FontWeight="Bold" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <Canvas Width="90" Height="24" Margin="0,0,20,0" Background="#1E293B" VerticalAlignment="Center">
+                        <Polyline Points="{Binding CpuPoints}" Stroke="#38BDF8" StrokeThickness="1.5"/>
+                    </Canvas>
+                    
+                    <TextBlock Text="RAM Usage: " Foreground="#94A3B8" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtRamSummary" Text="{Binding RamSummaryFormatted}" Foreground="#38BDF8" FontWeight="Bold" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <Canvas Width="90" Height="24" Margin="0,0,20,0" Background="#1E293B" VerticalAlignment="Center">
+                        <Polyline Points="{Binding RamPoints}" Stroke="#A855F7" StrokeThickness="1.5"/>
+                    </Canvas>
+                    
+                    <TextBlock Text="Processes: " Foreground="#94A3B8" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtProcCount" Text="{Binding ProcessCount}" Foreground="#F1F5F9" FontWeight="Bold" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                    
+                    <TextBlock Text="Threads: " Foreground="#94A3B8" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtThreadCount" Text="{Binding ThreadCount}" Foreground="#F1F5F9" FontWeight="Bold" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                    
+                    <TextBlock Text="Handles: " Foreground="#94A3B8" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtHandleCount" Text="{Binding HandleCount}" Foreground="#F1F5F9" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Search Toolbar -->
+        <Border DockPanel.Dock="Top" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="0,0,0,1" Padding="8,6">
+            <DockPanel>
+                <TextBlock Text="Filter: " FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Button x:Name="BtnClearSearch" Content="Clear" DockPanel.Dock="Right" Padding="8,2" Margin="6,0,0,0"/>
+                <TextBox x:Name="TxtSearch" Padding="6,3" VerticalContentAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Real-time Activity Log Console Pane -->
+        <Border x:Name="LogPane" DockPanel.Dock="Bottom" Background="#0F172A" Height="150" Visibility="Collapsed" BorderBrush="#334155" BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Border Grid.Row="0" Background="#1E293B" Padding="8,4">
+                    <DockPanel>
+                        <TextBlock Text="Telemetry &amp; Activity Log Console" Foreground="#94A3B8" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                            <Button x:Name="BtnClearLog" Content="Clear Console" Padding="8,2" FontSize="10" Margin="0,0,6,0" Background="#334155" Foreground="White" BorderThickness="0"/>
+                            <Button x:Name="BtnToggleLogPane" Content="Close [X]" Padding="6,2" FontSize="10" Background="#475569" Foreground="White" BorderThickness="0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <TextBox x:Name="TxtLogConsole" Grid.Row="1" Background="#0F172A" Foreground="#38BDF8" FontFamily="Consolas" FontSize="11" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" BorderThickness="0" Padding="8,6" TextWrapping="NoWrap"/>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <StatusBar DockPanel.Dock="Bottom" Background="#E2E8F0">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="Connecting to Target... | Refresh Interval: 2s"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <Button x:Name="BtnShowLog" Content="[ Log Console ]" Padding="6,1" FontSize="11" Background="#CBD5E1" BorderThickness="0"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- Main TabControl View Area -->
+        <TabControl x:Name="MainTabControl" Margin="4">
+            <!-- Tab 1: Processes -->
+            <TabItem Header="Processes">
+                <DataGrid x:Name="GridProcesses" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True" 
+                          SelectionMode="Single" 
+                          HeadersVisibility="Column" 
+                          GridLinesVisibility="Horizontal"
+                          Background="White">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="{Binding RowBackground}"/>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Process Name" SortMemberPath="Name" Width="240">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="{Binding IndentWidth}" Height="1"/>
+                                        <Border x:Name="BtnToggleExpander" Width="20" Height="14" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="{Binding ToggleVisibility}" Background="#E2E8F0" CornerRadius="2" Cursor="Hand">
+                                            <TextBlock Text="{Binding ToggleSymbol}" FontFamily="Consolas" FontSize="10" Foreground="#1E293B" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <Border Width="12" Height="14" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="{Binding LeafVisibility}">
+                                            <TextBlock Text="-" FontFamily="Consolas" FontSize="10" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="#0F172A"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="PID" Binding="{Binding PID}" SortMemberPath="PID" Width="75"/>
+                        <DataGridTextColumn Header="Parent PID" Binding="{Binding ParentPID}" SortMemberPath="ParentPID" Width="80"/>
+                        <DataGridTextColumn Header="CPU (%)" Binding="{Binding CPUFormatted}" SortMemberPath="CPU" Width="85"/>
+                        <DataGridTextColumn Header="Memory" Binding="{Binding MemoryFormatted}" SortMemberPath="MemoryBytes" Width="100"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" SortMemberPath="Status" Width="100"/>
+                        <DataGridTextColumn Header="Threads" Binding="{Binding Threads}" SortMemberPath="Threads" Width="75"/>
+                        <DataGridTextColumn Header="Handles" Binding="{Binding Handles}" SortMemberPath="Handles" Width="80"/>
+                        <DataGridTextColumn Header="User" Binding="{Binding User}" SortMemberPath="User" Width="150"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="CtxEndProcess" Header="End Process"/>
+                            <MenuItem x:Name="CtxEndTree" Header="End Process Tree"/>
+                            <Separator/>
+                            <MenuItem x:Name="CtxProperties" Header="Properties"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+            </TabItem>
+
+            <!-- Tab 2: Windows Services -->
+            <TabItem Header="Services">
+                <DataGrid x:Name="GridServices" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True" 
+                          SelectionMode="Single" 
+                          HeadersVisibility="Column" 
+                          GridLinesVisibility="Horizontal"
+                          Background="White"
+                          AlternatingRowBackground="#F8FAFC">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" SortMemberPath="Name" Width="140"/>
+                        <DataGridTextColumn Header="Display Name" Binding="{Binding DisplayName}" SortMemberPath="DisplayName" Width="260"/>
+                        <DataGridTextColumn Header="PID" Binding="{Binding PID}" SortMemberPath="PID" Width="75"/>
+                        <DataGridTemplateColumn Header="Status" SortMemberPath="Status" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Status}" FontWeight="SemiBold" Foreground="{Binding StatusBrush}" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Startup Type" Binding="{Binding StartType}" SortMemberPath="StartType" Width="110"/>
+                        <DataGridTextColumn Header="User Account" Binding="{Binding User}" SortMemberPath="User" Width="160"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="CtxStartService" Header="Start Service"/>
+                            <MenuItem x:Name="CtxStopService" Header="Stop Service"/>
+                            <MenuItem x:Name="CtxRestartService" Header="Restart Service"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
