@@ -74,7 +74,6 @@ Security Operations Centers (SOCs) and Endpoint Detection and Response (EDR) age
 ```text
 Project_RemoteTaskManager/
 ├── README.md                              # Repository Documentation
-├── Remote Process Manager (Windows NT-Style).md  # Detailed Technical Specification
 └── RemoteProcessManager/
     ├── RemoteProcessManager.psd1          # Module Manifest
     ├── RemoteProcessManager.psm1          # Primary Module Entry Point & GUI Controller
